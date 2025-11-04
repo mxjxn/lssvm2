@@ -5,7 +5,7 @@ import "forge-std/Script.sol";
 import "../src/settings/Splitter.sol";
 import "../src/settings/StandardSettings.sol";
 import "../src/settings/StandardSettingsFactory.sol";
-import "../src/LSSVMPairFactory.sol";
+import "../src/ILSSVMPairFactoryLike.sol";
 
 /**
  * @title Settings Deployment Script

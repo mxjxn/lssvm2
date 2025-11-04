@@ -12,12 +12,14 @@ import "../src/erc1155/LSSVMPairERC1155ERC20.sol";
 import "../src/LSSVMPairFactory.sol";
 
 // Bonding curves
+import "../src/bonding-curves/ICurve.sol";
 import "../src/bonding-curves/LinearCurve.sol";
 import "../src/bonding-curves/ExponentialCurve.sol";
 import "../src/bonding-curves/XykCurve.sol";
 import "../src/bonding-curves/GDACurve.sol";
 
 // Router
+import "../src/LSSVMRouter.sol";
 import "../src/VeryFastRouter.sol";
 
 // Property checkers

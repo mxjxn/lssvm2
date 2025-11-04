@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Script.sol";
 import "../src/VeryFastRouter.sol";
-import "../src/LSSVMPairFactory.sol";
+import "../src/ILSSVMPairFactoryLike.sol";
 
 /**
  * @title Router Deployment Script

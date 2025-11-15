@@ -38,3 +38,19 @@ open report/index.html
 
 See the [deployment guide](./script/README.md) for detailed instructions.
 
+### Local Testing
+
+Before deploying to testnet or mainnet, test deployments locally using Anvil:
+
+```bash
+# Start Anvil in one terminal
+anvil
+
+# Deploy to local node
+./deploy-local.sh
+```
+
+For comprehensive local testing instructions including ERC721 and ERC1155 pool testing, see [LOCAL_TESTING.md](./LOCAL_TESTING.md).
+
+For details on deployment improvements and best practices, see [DEPLOYMENT_IMPROVEMENTS.md](./DEPLOYMENT_IMPROVEMENTS.md).
+

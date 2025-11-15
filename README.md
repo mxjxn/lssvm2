@@ -176,6 +176,35 @@ This repository includes comprehensive deployment scripts for deploying the enti
 - **Individual deployment scripts** for each component (Core, Bonding Curves, Router, Property Checkers, Settings)
 - **Master deployment script** (`DeployAll.s.sol`) for deploying everything at once
 - **Comprehensive documentation** including README, deployment checklist, and order reference
+- **Local testing support** with Anvil integration and helper scripts
+
+### Local Testing
+
+Before deploying to testnet or mainnet, it's highly recommended to test deployments locally using Anvil (Foundry's local Ethereum node).
+
+**Quick Start for Local Testing:**
+
+1. Start Anvil in one terminal:
+   ```bash
+   anvil
+   ```
+
+2. Deploy to local node:
+   ```bash
+   cd packages/lssvm-contracts
+   ./deploy-local.sh
+   ```
+
+3. Follow the [Local Testing Guide](./packages/lssvm-contracts/LOCAL_TESTING.md) for:
+   - Factory configuration (automatic and manual)
+   - Creating and testing ERC721 pools
+   - Creating and testing ERC1155 pools
+   - Useful cast commands for querying contracts
+   - Troubleshooting common issues
+
+The deployment script automatically configures the factory (whitelists bonding curves and router) when the deployer is the factory owner.
+
+### Deployment to Testnet/Mainnet
 
 For detailed instructions, see the [Deployment Guide](./packages/lssvm-contracts/script/README.md).
 
@@ -190,6 +219,15 @@ cp script/.env.example .env
 # Deploy all contracts
 forge script script/DeployAll.s.sol:DeployAll --rpc-url $RPC_URL --broadcast --verify
 ```
+
+### Deployment Features
+
+- **Automatic factory configuration**: Scripts automatically whitelist bonding curves and router when deployer is factory owner
+- **OpenZeppelin v5 compatibility**: Updated to work with latest OpenZeppelin contracts
+- **Comprehensive error handling**: Detailed logging and fallback checks
+- **Helper scripts**: `deploy-local.sh` for easy local deployment
+
+For more details on deployment improvements and best practices, see [DEPLOYMENT_IMPROVEMENTS.md](./packages/lssvm-contracts/DEPLOYMENT_IMPROVEMENTS.md).
 
 ## Deployments (sudoswap)
 

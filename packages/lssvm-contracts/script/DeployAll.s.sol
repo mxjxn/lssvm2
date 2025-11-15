@@ -198,9 +198,15 @@ contract DeployAll is Script {
     }
 
     function configureFactory() internal {
-        // Note: Only if the deployer is the factory owner
+        // Check if deployer is the factory owner
         address factoryOwner = vm.envAddress("FACTORY_OWNER");
-        if (msg.sender == factoryOwner) {
+        address deployer = tx.origin; // Use tx.origin for deployer address
+        
+        // Fallback: verify factory's actual owner matches expected owner
+        address actualOwner = factory.owner();
+        bool shouldConfigure = (deployer == factoryOwner) || (actualOwner == factoryOwner);
+        
+        if (shouldConfigure) {
             console.log("Whitelisting bonding curves...");
             factory.setBondingCurveAllowed(ICurve(address(linearCurve)), true);
             factory.setBondingCurveAllowed(ICurve(address(exponentialCurve)), true);
@@ -208,11 +214,14 @@ contract DeployAll is Script {
             factory.setBondingCurveAllowed(ICurve(address(gdaCurve)), true);
             
             console.log("Whitelisting router...");
-            factory.setRouterAllowed(LSSVMRouter(address(router)), true);
+            factory.setRouterAllowed(LSSVMRouter(payable(address(router))), true);
             
             console.log("Configuration complete!");
         } else {
             console.log("WARNING: Deployer is not factory owner. Manual configuration required.");
+            console.log("  Deployer:", deployer);
+            console.log("  Factory Owner:", factoryOwner);
+            console.log("  Actual Factory Owner:", actualOwner);
         }
     }
 

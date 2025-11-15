@@ -54,7 +54,7 @@ abstract contract OwnableWithTransferCallback {
         if (newOwner == address(0)) revert Ownable_NewOwnerZeroAddress();
         _transferOwnership(newOwner);
 
-        if (newOwner.isContract()) {
+        if (newOwner.code.length > 0) {
             try IOwnershipTransferReceiver(newOwner).onOwnershipTransferred{value: msg.value}(msg.sender, data) {}
             // If revert...
             catch (bytes memory reason) {

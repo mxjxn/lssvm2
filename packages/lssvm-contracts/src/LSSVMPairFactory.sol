@@ -28,11 +28,12 @@ import {ISettings} from "./settings/ISettings.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165Checker.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/IAccessControlUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/utils/AddressUpgradeable.sol";
+import "@openzeppelin/contracts/access/IAccessControl.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 import "@manifoldxyz/libraries-solidity/contracts/access/IAdminControl.sol";
 import "./royalty-auth/INiftyGateway.sol";
-import "./royalty-auth/IFoundation.sol";
+import {IFoundation} from "manifoldxyz/specs/IFoundation.sol";
+import "./royalty-auth/IFoundationTreasury.sol";
 import "./royalty-auth/IDigitalax.sol";
 import "./royalty-auth/IArtBlocks.sol";
 
@@ -42,7 +43,7 @@ import "./royalty-auth/IArtBlocks.sol";
  */
 contract LSSVMPairFactory is Owned, ILSSVMPairFactoryLike {
     using LSSVMPairCloner for address;
-    using AddressUpgradeable for address;
+    using Address for address;
     using SafeTransferLib for address payable;
     using SafeTransferLib for ERC20;
 
@@ -367,14 +368,14 @@ contract LSSVMPairFactory is Owned, ILSSVMPairFactoryLike {
         try OwnableUpgradeable(tokenAddress).owner() returns (address owner) {
             if (owner == proposedAuthAddress) return true;
 
-            if (owner.isContract()) {
+            if (owner.code.length > 0) {
                 try OwnableUpgradeable(owner).owner() returns (address passThroughOwner) {
                     if (passThroughOwner == proposedAuthAddress) return true;
                 } catch {}
             }
         } catch {}
         // Check for default OZ auth role
-        try IAccessControlUpgradeable(tokenAddress).hasRole(0x00, proposedAuthAddress) returns (bool hasRole) {
+        try IAccessControl(tokenAddress).hasRole(0x00, proposedAuthAddress) returns (bool hasRole) {
             if (hasRole) return true;
         } catch {}
         // Nifty Gateway overrides

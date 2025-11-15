@@ -204,6 +204,152 @@ forge script script/DeployAll.s.sol:DeployAll \
   -vvvv
 ```
 
+## Local Testing
+
+Before deploying to testnet or mainnet, it's highly recommended to test deployments locally. This helps catch configuration errors and ensures everything works as expected.
+
+**📖 For comprehensive local testing instructions, see [LOCAL_TESTING.md](../LOCAL_TESTING.md)**
+
+The guide covers:
+- Complete deployment workflow
+- Factory configuration (automatic and manual)
+- Testing ERC721 pools (create, buy, sell)
+- Testing ERC1155 pools (create, buy, sell)
+- Useful cast commands for querying contracts
+- Troubleshooting common issues
+
+### Option 1: Local Anvil Node (Recommended for First-Time Testing)
+
+Anvil is Foundry's local Ethereum node. It's perfect for testing deployments without any external dependencies:
+
+```bash
+# Terminal 1: Start Anvil (local node)
+anvil
+
+# This will output something like:
+# Available Accounts
+# ==================
+# (0) 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 (10000 ETH)
+# ...
+# Private Keys
+# ==================
+# (0) 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+# ...
+# RPC URL: http://127.0.0.1:8545
+```
+
+Create a `.env.local` file for local testing:
+
+```bash
+# .env.local
+RPC_URL=http://127.0.0.1:8545
+PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+
+# For local testing, you can use any address - RoyaltyEngine will fallback gracefully
+# Option 1: Use address(0) - royalties won't work but deployment will succeed
+ROYALTY_REGISTRY=0x0000000000000000000000000000000000000000
+
+# Option 2: Deploy a mock registry (see test files for examples)
+# Option 3: Use a real testnet address if you're forking
+
+# Use the first Anvil account for everything
+PROTOCOL_FEE_RECIPIENT=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+PROTOCOL_FEE_MULTIPLIER=10000000000000000  # 0.01e18 = 1%
+FACTORY_OWNER=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+```
+
+**Note**: The `RoyaltyEngine` contract accepts any address. If the registry call fails, it gracefully falls back to using the token address itself for ERC2981 lookups. For local testing without royalties, `address(0)` works fine.
+
+```bash
+# Terminal 2: Deploy to local Anvil node
+cd packages/lssvm-contracts
+source .env.local
+
+# Deploy all contracts
+forge script script/DeployAll.s.sol:DeployAll \
+  --rpc-url $RPC_URL \
+  --broadcast \
+  -vvvv
+```
+
+After deployment, you can interact with the contracts using `cast`:
+
+```bash
+# Check factory owner
+cast call <FACTORY_ADDRESS> "owner()" --rpc-url http://127.0.0.1:8545
+
+# Check protocol fee recipient
+cast call <FACTORY_ADDRESS> "protocolFeeRecipient()" --rpc-url http://127.0.0.1:8545
+```
+
+### Option 2: Forked Testnet (More Realistic)
+
+For more realistic testing, you can fork a testnet (like Base Sepolia) and deploy to the fork:
+
+```bash
+# Start Anvil with a testnet fork
+anvil --fork-url https://sepolia.base.org
+
+# Or fork Ethereum Sepolia
+anvil --fork-url https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY
+```
+
+This gives you:
+- Real contract addresses (like the Manifold Royalty Registry)
+- Real token addresses if you want to test with actual NFTs
+- More realistic gas costs and behavior
+
+Use the same deployment commands as Option 1, but with testnet addresses in your `.env.local`:
+
+```bash
+# .env.local for forked testnet
+RPC_URL=http://127.0.0.1:8545
+PRIVATE_KEY=<your_test_account_private_key>
+
+# Use real testnet addresses (check Network-Specific Addresses section for testnet registry addresses)
+ROYALTY_REGISTRY=0x0000000000000000000000000000000000000000  # Replace with actual testnet registry
+PROTOCOL_FEE_RECIPIENT=<your_address>
+PROTOCOL_FEE_MULTIPLIER=10000000000000000
+FACTORY_OWNER=<your_address>
+```
+
+### Testing Checklist
+
+After local deployment, verify:
+
+1. **Factory Deployment**
+   ```bash
+   cast call $FACTORY_ADDRESS "owner()" --rpc-url $RPC_URL
+   # Should return your FACTORY_OWNER address
+   ```
+
+2. **Bonding Curves Whitelisted**
+   ```bash
+   cast call $FACTORY_ADDRESS "bondingCurveAllowed(address)" $LINEAR_CURVE --rpc-url $RPC_URL
+   # Should return 0x0000000000000000000000000000000000000000000000000000000000000001 (true)
+   ```
+
+3. **Router Whitelisted**
+   ```bash
+   cast call $FACTORY_ADDRESS "routerAllowed(address)" $ROUTER_ADDRESS --rpc-url $RPC_URL
+   # Should return true
+   ```
+
+4. **Create a Test Pool** (if you have test NFTs)
+   - Use the factory to create a test pool
+   - Verify the pool was created correctly
+
+### Troubleshooting Local Deployments
+
+**Issue**: "execution reverted" errors
+- **Solution**: Check that all environment variables are set correctly, especially addresses are valid
+
+**Issue**: "insufficient funds"
+- **Solution**: Anvil accounts start with 10000 ETH, but if using a fork, ensure your account has funds
+
+**Issue**: "ROYALTY_REGISTRY not found"
+- **Solution**: For local testing without a fork, you may need to deploy a mock royalty registry or use a valid address format
+
 ## Post-Deployment Configuration
 
 After deployment, the following configuration steps must be performed by the factory owner:
@@ -251,6 +397,18 @@ factory.setCallAllowed(targetAddress, true);
 | Optimism | `0xad2184fb5dbcfc05d8f056542fb25b04fa32a95d` |
 
 For other networks, check the [Manifold Royalty Registry documentation](https://docs.manifold.xyz/v/manifold-for-developers/smart-contracts/royalty-registry).
+
+### Manifold Royalty System Addresses (Universal)
+
+The following addresses are consistent across Base and all EVM chains:
+
+| Contract | Address |
+|----------|---------|
+| TimeLock Controller | `0xe3A6CD067a1193b903143C36dA00557c9d95C41e` |
+| Royalty Registry Impl | `0xd389340d95c851655dD99c5781be1c5e39d30B31` |
+| Royalty Engine Impl | `0xD388d812c1cE2CE7C46D797684BA912De65CD414` |
+| Royalty Override Factory | `0x103247393F448203ed7Ff7515E262316812637B4` |
+| Royalty Fallback Registry | `0xB78fC2052717C7AE061a14dB1fB2038d5AC34D29` |
 
 ### sudoAMM v2 Production Deployments
 

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Helper script to deploy to local Anvil node
+# Helper script to deploy to Base mainnet
 
 set -e
 
@@ -50,26 +50,15 @@ if [ -z "$ROYALTY_REGISTRY" ] || [ -z "$RPC_URL" ] || [ -z "$PRIVATE_KEY" ]; the
     exit 1
 fi
 
-# Check if Anvil is running
-if ! curl -s http://127.0.0.1:8545 > /dev/null 2>&1; then
-    echo "Error: Anvil is not running on http://127.0.0.1:8545"
-    echo "Please start Anvil in another terminal: anvil"
-    exit 1
-fi
-
-# Verify we're connecting to local Anvil (not a remote network)
-LOCAL_RPC="http://127.0.0.1:8545"
-if [ "$RPC_URL" != "$LOCAL_RPC" ]; then
-    echo "Warning: RPC_URL is set to $RPC_URL, but we expect $LOCAL_RPC for local deployment"
-    echo "Forcing RPC_URL to local Anvil node..."
-    RPC_URL="$LOCAL_RPC"
-fi
-
-# Check chain ID - if it's not 31337 (default Anvil), warn user
+# Verify we're deploying to Base mainnet (chain ID 8453)
 CHAIN_ID=$(cast chain-id --rpc-url $RPC_URL 2>/dev/null || echo "")
-if [ -n "$CHAIN_ID" ] && [ "$CHAIN_ID" != "31337" ]; then
-    echo "Warning: Chain ID is $CHAIN_ID (expected 31337 for local Anvil)"
-    echo "If Anvil is forking a network, this is normal, but ensure you're not broadcasting to mainnet!"
+if [ -n "$CHAIN_ID" ] && [ "$CHAIN_ID" != "8453" ]; then
+    echo "Warning: Chain ID is $CHAIN_ID (expected 8453 for Base mainnet)"
+    read -p "Are you sure you want to deploy to chain $CHAIN_ID? (yes/no): " confirm
+    if [ "$confirm" != "yes" ]; then
+        echo "Deployment cancelled."
+        exit 1
+    fi
 fi
 
 # Extract deployer address from private key
@@ -81,28 +70,45 @@ else
     SENDER_FLAG="--sender $DEPLOYER_ADDRESS"
     echo "Deployer address: $DEPLOYER_ADDRESS"
     
-    # For local deployments, automatically set FACTORY_OWNER to deployer address
-    # This ensures the deployer can configure the factory after deployment
+    # For Base deployments, ensure FACTORY_OWNER is set to deployer if not explicitly set
     if [ -z "$FACTORY_OWNER" ] || [ "$FACTORY_OWNER" != "$DEPLOYER_ADDRESS" ]; then
-        echo "Setting FACTORY_OWNER to deployer address for local deployment..."
+        echo "Setting FACTORY_OWNER to deployer address for Base deployment..."
         export FACTORY_OWNER="$DEPLOYER_ADDRESS"
     fi
 fi
 
+# Check deployer balance
+echo "Checking deployer balance..."
+BALANCE=$(cast balance $DEPLOYER_ADDRESS --rpc-url $RPC_URL 2>/dev/null || echo "0")
+if [ "$BALANCE" == "0" ]; then
+    echo "Warning: Deployer balance is 0. Make sure you have ETH for gas fees!"
+    read -p "Continue anyway? (yes/no): " confirm
+    if [ "$confirm" != "yes" ]; then
+        echo "Deployment cancelled."
+        exit 1
+    fi
+else
+    ETH_BALANCE=$(cast --to-unit "$BALANCE" ether 2>/dev/null || echo "0")
+    echo "✓ Deployer balance: $ETH_BALANCE ETH"
+fi
+
 # Run the deployment script
-# Force use of local RPC and add flags to prevent accidental mainnet broadcasts
-echo "Deploying to local Anvil node at $RPC_URL..."
-echo "Note: If Anvil is forking a network, ensure transactions are sent to local node only."
+echo ""
+echo "Deploying to Base mainnet..."
+echo "RPC URL: $RPC_URL"
 echo ""
 
-# Use explicit localhost RPC to prevent forge from using a different endpoint
-forge script script/DeployAll.s.sol:DeployAll \
-  --rpc-url "$LOCAL_RPC" \
+# Export all required variables for forge script
+export ROYALTY_REGISTRY
+export PROTOCOL_FEE_RECIPIENT
+export PROTOCOL_FEE_MULTIPLIER
+export FACTORY_OWNER
+
+forge script script/DeployForBase.s.sol:DeployForBase \
+  --rpc-url $RPC_URL \
   --private-key $PRIVATE_KEY \
-  --skip test \
   --broadcast \
-  --legacy \
-  --slow \
+  --verify \
   $SENDER_FLAG \
   -vvvv
 

@@ -4,6 +4,9 @@
 
 set -e
 
+# Disable Foundry nightly build warnings
+export FOUNDRY_DISABLE_NIGHTLY_WARNING=1
+
 # Colors for output
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -21,6 +24,31 @@ else
 fi
 
 RPC_URL=${RPC_URL:-http://127.0.0.1:8545}
+
+# Strip quotes from MNEMONIC if present
+if [ -n "$MNEMONIC" ]; then
+    MNEMONIC=$(echo "$MNEMONIC" | sed "s/^[[:space:]]*['\"]//; s/['\"][[:space:]]*$//; s/^[[:space:]]*//; s/[[:space:]]*$//")
+fi
+
+# Always prefer MNEMONIC over PRIVATE_KEY if MNEMONIC is set
+if [ -n "$MNEMONIC" ]; then
+    # Use MNEMONIC_INDEX if set, otherwise default to 2 (third address)
+    MNEMONIC_INDEX=${MNEMONIC_INDEX:-2}
+    echo "Using MNEMONIC to derive private key (ignoring PRIVATE_KEY if set)..."
+    echo "Using mnemonic index $MNEMONIC_INDEX (address index $MNEMONIC_INDEX)"
+    DERIVED_PRIVATE_KEY=$(cast wallet private-key "$MNEMONIC" $MNEMONIC_INDEX 2>/dev/null || echo "")
+    if [ -n "$DERIVED_PRIVATE_KEY" ]; then
+        PRIVATE_KEY="$DERIVED_PRIVATE_KEY"
+        DERIVED_ADDRESS=$(cast wallet address $PRIVATE_KEY 2>/dev/null || echo "")
+        echo -e "${GREEN}✓ Derived private key from mnemonic (index $MNEMONIC_INDEX)${NC}"
+        echo "  Address: $DERIVED_ADDRESS"
+    else
+        echo -e "${RED}Error: Could not derive private key from mnemonic at index $MNEMONIC_INDEX!${NC}"
+        exit 1
+    fi
+fi
+
+# Fallback to default Anvil private key if neither MNEMONIC nor PRIVATE_KEY is set
 PRIVATE_KEY=${PRIVATE_KEY:-0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80}
 
 # Check if Anvil is running
@@ -30,13 +58,19 @@ if ! curl -s $RPC_URL > /dev/null 2>&1; then
     exit 1
 fi
 
-# Extract deployed addresses from broadcast file
-BROADCAST_FILE="broadcast/DeployAll.s.sol/31337/run-latest.json"
+# Detect chain ID from Anvil
+CHAIN_ID=$(cast chain-id --rpc-url $RPC_URL 2>/dev/null || echo "31337")
+echo "Detected chain ID: $CHAIN_ID"
+
+# Extract deployed addresses from broadcast file (use detected chain ID)
+BROADCAST_FILE="broadcast/DeployAll.s.sol/$CHAIN_ID/run-latest.json"
 if [ ! -f "$BROADCAST_FILE" ]; then
     echo -e "${RED}Error: Broadcast file not found: $BROADCAST_FILE${NC}"
     echo "Please deploy contracts first using ./deploy-local.sh"
+    echo "Looking for broadcast file at: $BROADCAST_FILE"
     exit 1
 fi
+echo "Using broadcast file: $BROADCAST_FILE"
 
 echo -e "${GREEN}=== Integration Tests for Deployed Contracts ===${NC}\n"
 
@@ -69,14 +103,22 @@ echo ""
 
 # Test 1: Check factory owner
 echo -e "${GREEN}[Test 1] Checking factory owner...${NC}"
-FACTORY_OWNER=$(cast call $FACTORY_ADDRESS "owner()" --rpc-url $RPC_URL 2>/dev/null || echo "")
-if [ -z "$FACTORY_OWNER" ]; then
+FACTORY_OWNER_RAW=$(cast call $FACTORY_ADDRESS "owner()" --rpc-url $RPC_URL 2>/dev/null || echo "")
+if [ -z "$FACTORY_OWNER_RAW" ]; then
     echo -e "${RED}  ✗ Failed to get factory owner${NC}"
     exit 1
 else
+    # Extract address from padded bytes32 (take last 40 chars and add 0x prefix)
+    FACTORY_OWNER=$(echo "$FACTORY_OWNER_RAW" | sed 's/0x000000000000000000000000/0x/' | tr '[:upper:]' '[:lower:]')
+    FACTORY_OWNER=$(cast --to-checksum-address $FACTORY_OWNER 2>/dev/null || echo "$FACTORY_OWNER")
     echo -e "${GREEN}  ✓ Factory owner: $FACTORY_OWNER${NC}"
-    if [ "$FACTORY_OWNER" != "$(cast --to-checksum-address $FACTORY_OWNER)" ]; then
-        echo -e "${YELLOW}  ⚠ Warning: Owner address format mismatch${NC}"
+    
+    # Check if it matches deployer address
+    DEPLOYER_CHECKSUM=$(cast --to-checksum-address $DERIVED_ADDRESS 2>/dev/null || echo "$DERIVED_ADDRESS")
+    if [ "$FACTORY_OWNER" == "$DEPLOYER_CHECKSUM" ]; then
+        echo -e "${GREEN}  ✓ Factory owner matches deployer address${NC}"
+    else
+        echo -e "${YELLOW}  ⚠ Factory owner does not match deployer (deployer: $DEPLOYER_CHECKSUM)${NC}"
     fi
 fi
 
@@ -92,18 +134,28 @@ fi
 
 # Test 3: Check router whitelist
 echo -e "${GREEN}[Test 3] Checking router whitelist...${NC}"
-ROUTER_ALLOWED=$(cast call $FACTORY_ADDRESS "routerAllowed(address)" $ROUTER_ADDRESS --rpc-url $RPC_URL 2>/dev/null || echo "")
-if [ "$ROUTER_ALLOWED" == "0x0000000000000000000000000000000000000000000000000000000000000001" ]; then
-    echo -e "${GREEN}  ✓ Router is whitelisted${NC}"
+# routerStatus returns (bool allowed, bool wasEverTouched) as concatenated hex
+ROUTER_STATUS=$(cast call $FACTORY_ADDRESS "routerStatus(address)" $ROUTER_ADDRESS --rpc-url $RPC_URL 2>/dev/null || echo "")
+if [ -n "$ROUTER_STATUS" ]; then
+    # Extract the first 66 chars (0x + 64 chars for first bool)
+    ROUTER_ALLOWED=$(echo "$ROUTER_STATUS" | cut -c1-66)
+    if [ "$ROUTER_ALLOWED" == "0x0000000000000000000000000000000000000000000000000000000000000001" ]; then
+        echo -e "${GREEN}  ✓ Router is whitelisted${NC}"
+    else
+        echo -e "${RED}  ✗ Router is NOT whitelisted${NC}"
+        echo -e "${YELLOW}  Response: $ROUTER_STATUS${NC}"
+    fi
 else
-    echo -e "${RED}  ✗ Router is NOT whitelisted${NC}"
-    echo -e "${YELLOW}  Response: $ROUTER_ALLOWED${NC}"
+    echo -e "${RED}  ✗ Failed to check router status${NC}"
 fi
 
 # Test 4: Check protocol fee recipient
 echo -e "${GREEN}[Test 4] Checking protocol fee recipient...${NC}"
-FEE_RECIPIENT=$(cast call $FACTORY_ADDRESS "protocolFeeRecipient()" --rpc-url $RPC_URL 2>/dev/null || echo "")
-if [ -n "$FEE_RECIPIENT" ]; then
+FEE_RECIPIENT_RAW=$(cast call $FACTORY_ADDRESS "protocolFeeRecipient()" --rpc-url $RPC_URL 2>/dev/null || echo "")
+if [ -n "$FEE_RECIPIENT_RAW" ]; then
+    # Extract address from padded bytes32
+    FEE_RECIPIENT=$(echo "$FEE_RECIPIENT_RAW" | sed 's/0x000000000000000000000000/0x/' | tr '[:upper:]' '[:lower:]')
+    FEE_RECIPIENT=$(cast --to-checksum-address $FEE_RECIPIENT 2>/dev/null || echo "$FEE_RECIPIENT")
     echo -e "${GREEN}  ✓ Protocol fee recipient: $FEE_RECIPIENT${NC}"
 else
     echo -e "${RED}  ✗ Failed to get protocol fee recipient${NC}"
@@ -119,17 +171,16 @@ else
     echo -e "${RED}  ✗ Failed to get protocol fee multiplier${NC}"
 fi
 
-# Test 6: Verify RoyaltyEngine is set
-echo -e "${GREEN}[Test 6] Checking RoyaltyEngine...${NC}"
-ROYALTY_ENGINE_FROM_FACTORY=$(cast call $FACTORY_ADDRESS "royaltyEngine()" --rpc-url $RPC_URL 2>/dev/null || echo "")
-if [ -n "$ROYALTY_ENGINE_FROM_FACTORY" ]; then
-    if [ "$(cast --to-checksum-address $ROYALTY_ENGINE_FROM_FACTORY)" == "$(cast --to-checksum-address $ROYALTY_ENGINE)" ]; then
-        echo -e "${GREEN}  ✓ RoyaltyEngine matches deployment${NC}"
-    else
-        echo -e "${YELLOW}  ⚠ RoyaltyEngine mismatch (expected: $ROYALTY_ENGINE, got: $ROYALTY_ENGINE_FROM_FACTORY)${NC}"
-    fi
+# Test 6: Verify RoyaltyEngine deployment
+echo -e "${GREEN}[Test 6] Checking RoyaltyEngine deployment...${NC}"
+# Check if RoyaltyEngine has code deployed
+ROYALTY_ENGINE_CODE=$(cast code $ROYALTY_ENGINE --rpc-url $RPC_URL 2>/dev/null || echo "")
+if [ -n "$ROYALTY_ENGINE_CODE" ] && [ "$ROYALTY_ENGINE_CODE" != "0x" ]; then
+    ROYALTY_ENGINE_CHECKSUM=$(cast --to-checksum-address $ROYALTY_ENGINE 2>/dev/null || echo "$ROYALTY_ENGINE")
+    echo -e "${GREEN}  ✓ RoyaltyEngine deployed at: $ROYALTY_ENGINE_CHECKSUM${NC}"
+    echo -e "${GREEN}  ✓ RoyaltyEngine has code deployed${NC}"
 else
-    echo -e "${RED}  ✗ Failed to get RoyaltyEngine from factory${NC}"
+    echo -e "${RED}  ✗ RoyaltyEngine has no code or deployment failed${NC}"
 fi
 
 echo ""

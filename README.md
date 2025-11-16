@@ -229,7 +229,9 @@ forge script script/DeployAll.s.sol:DeployAll --rpc-url $RPC_URL --broadcast --v
 
 For more details on deployment improvements and best practices, see [DEPLOYMENT_IMPROVEMENTS.md](./packages/lssvm-contracts/DEPLOYMENT_IMPROVEMENTS.md).
 
-## Deployments (sudoswap)
+## Deployments
+
+### Ethereum Mainnet (sudoswap)
 
 The contracts have been deployed on Ethereum Mainnet to the following addresses:
 
@@ -251,3 +253,31 @@ The contracts have been deployed on Ethereum Mainnet to the following addresses:
 - PropertyCheckerFactory: [0x031b216FaBec82310FEa3426b33455609b99AfC1](https://etherscan.io/address/0x031b216fabec82310fea3426b33455609b99afc1)
 - RoyaltyEngine: [0xBc40d21999b4BF120d330Ee3a2DE415287f626C9](https://etherscan.io/address/0xbc40d21999b4bf120d330ee3a2de415287f626c9)
 - ZeroExRouter: [0xe4ac8eDd513074BA5f78DCdDc57680EF68Fa0CaE](https://etherscan.io/address/0xe4ac8edd513074ba5f78dcddc57680ef68fa0cae)
+
+### Base Mainnet (mxjxn)
+
+The contracts have been deployed on Base Mainnet. See the [Base Deployment Summary](./packages/lssvm-contracts/BASE_DEPLOYMENT_SUMMARY.md) for complete details.
+
+**Factory & Router**
+
+- LSSVMPairFactory: [0xF6B4bDF778db19DD5928248DE4C18Ce22E8a5f5e](https://basescan.org/address/0xF6B4bDF778db19DD5928248DE4C18Ce22E8a5f5e)
+- VeryFastRouter: [0x4352c72114C4b9c4e1F8C96347F2165EECaDeb5C](https://basescan.org/address/0x4352c72114C4b9c4e1F8C96347F2165EECaDeb5C)
+
+**Core Contracts**
+
+- RoyaltyEngine: [0x8a492D8d41bE9886E4f7ee7572cEE4eE9DA364E1](https://basescan.org/address/0x8a492D8d41bE9886E4f7ee7572cEE4eE9DA364E1)
+- LSSVMPairERC721ETH: [0x577C0A55a7C8189F31C22F39e41FA2A8DcB40bad](https://basescan.org/address/0x577C0A55a7C8189F31C22F39e41FA2A8DcB40bad)
+- LSSVMPairERC721ERC20: [0x12AA8645252D5FEceCf467724CdDD83093069E9f](https://basescan.org/address/0x12AA8645252D5FEceCf467724CdDD83093069E9f)
+- LSSVMPairERC1155ETH: [0xF130207fbE0913b5470732D25699E41F5Ea4da7f](https://basescan.org/address/0xF130207fbE0913b5470732D25699E41F5Ea4da7f)
+- LSSVMPairERC1155ERC20: [0x68f397655a5a1478e24Bdb52D0Df33e50AB6Ce28](https://basescan.org/address/0x68f397655a5a1478e24Bdb52D0Df33e50AB6Ce28)
+
+**Bonding Curves** (Reused from Sudoswap - Ethereum Mainnet)
+
+- LinearCurve: [0xe5d78fec1a7f42d2F3620238C498F088A866FdC5](https://etherscan.io/address/0xe5d78fec1a7f42d2f3620238c498f088a866fdc5)
+- ExponentialCurve: [0xfa056C602aD0C0C4EE4385b3233f2Cb06730334a](https://etherscan.io/address/0xfa056c602ad0c0c4ee4385b3233f2cb06730334a)
+- XykCurve: [0xc7fB91B6cd3C67E02EC08013CEBb29b1241f3De5](https://etherscan.io/address/0xc7fb91b6cd3c67e02ec08013cebb29b1241f3de5)
+- GDACurve: [0x1fD5876d4A3860Eb0159055a3b7Cb79fdFFf6B67](https://etherscan.io/address/0x1fd5876d4a3860eb0159055a3b7cb79fdfff6b67)
+
+> **Note**: The bonding curves are stateless contracts deployed on Ethereum Mainnet and can be reused on Base. All curves are whitelisted in the Base factory.
+
+For complete deployment details, configuration, and next steps, see the [Base Deployment Summary](./packages/lssvm-contracts/BASE_DEPLOYMENT_SUMMARY.md).

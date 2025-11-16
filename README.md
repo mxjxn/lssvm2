@@ -343,7 +343,7 @@ The contracts have been deployed on Base Mainnet. See the [Base Deployment Summa
 - XykCurve: [0xd0A2f4ae5E816ec09374c67F6532063B60dE037B](https://basescan.org/address/0xd0A2f4ae5E816ec09374c67F6532063B60dE037B)
 - GDACurve: [0x4f1627be4C72aEB9565D4c751550C4D262a96B51](https://basescan.org/address/0x4f1627be4C72aEB9565D4c751550C4D262a96B51)
 
-> **⚠️ Important**: The initial deployment whitelisted Ethereum Mainnet addresses. These need to be replaced with the Base Mainnet addresses listed above. See the deployment summary for a fix script.
+> **Note**: All bonding curves are whitelisted and configured correctly on Base Mainnet.
 
 For complete deployment details, configuration, and next steps, see the [Base Deployment Summary](./packages/lssvm-contracts/BASE_DEPLOYMENT_SUMMARY.md).
 

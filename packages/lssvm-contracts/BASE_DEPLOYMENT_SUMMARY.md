@@ -82,35 +82,17 @@ Test the deployed contracts:
 - Factory is fully configured and ready to use
 - Contract verification can be completed later (not critical for functionality)
 
-## ⚠️ IMPORTANT: Fix Required
+## Factory Configuration Status
 
-The initial deployment whitelisted Ethereum Mainnet bonding curve addresses. These need to be replaced with the Base Mainnet addresses.
+✅ **All bonding curves are correctly whitelisted on Base Mainnet.**
 
-**To fix the factory whitelist, run:**
+The factory has been configured with the correct Base Mainnet bonding curve addresses:
+- Base Mainnet addresses are whitelisted ✅
+- Ethereum Mainnet addresses have been removed ✅
 
-```bash
-cd packages/lssvm-contracts
-./fix-base-bonding-curves.sh
-```
-
-This script will:
-1. Remove the Ethereum Mainnet bonding curve addresses from the whitelist
-2. Add the correct Base Mainnet bonding curve addresses
-3. Verify the whitelist status
-
-**Or manually using cast:**
-
-```bash
-# Remove Ethereum addresses
-cast send $FACTORY_ADDRESS "setBondingCurveAllowed(address,bool)" 0xe5d78fec1a7f42d2F3620238C498F088A866FdC5 false --private-key $PRIVATE_KEY --rpc-url $RPC_URL
-cast send $FACTORY_ADDRESS "setBondingCurveAllowed(address,bool)" 0xfa056C602aD0C0C4EE4385b3233f2Cb06730334a false --private-key $PRIVATE_KEY --rpc-url $RPC_URL
-cast send $FACTORY_ADDRESS "setBondingCurveAllowed(address,bool)" 0xc7fB91B6cd3C67E02EC08013CEBb29b1241f3De5 false --private-key $PRIVATE_KEY --rpc-url $RPC_URL
-cast send $FACTORY_ADDRESS "setBondingCurveAllowed(address,bool)" 0x1fD5876d4A3860Eb0159055a3b7Cb79fdFFf6B67 false --private-key $PRIVATE_KEY --rpc-url $RPC_URL
-
-# Add Base addresses
-cast send $FACTORY_ADDRESS "setBondingCurveAllowed(address,bool)" 0xe41352CB8D9af18231E05520751840559C2a548A true --private-key $PRIVATE_KEY --rpc-url $RPC_URL
-cast send $FACTORY_ADDRESS "setBondingCurveAllowed(address,bool)" 0x9506C0E5CEe9AD1dEe65B3539268D61CCB25aFB6 true --private-key $PRIVATE_KEY --rpc-url $RPC_URL
-cast send $FACTORY_ADDRESS "setBondingCurveAllowed(address,bool)" 0xd0A2f4ae5E816ec09374c67F6532063B60dE037B true --private-key $PRIVATE_KEY --rpc-url $RPC_URL
-cast send $FACTORY_ADDRESS "setBondingCurveAllowed(address,bool)" 0x4f1627be4C72aEB9565D4c751550C4D262a96B51 true --private-key $PRIVATE_KEY --rpc-url $RPC_URL
-```
+**Verification:**
+- Base LinearCurve (0xe41352CB8D9af18231E05520751840559C2a548A): ✅ Whitelisted
+- Base ExponentialCurve (0x9506C0E5CEe9AD1dEe65B3539268D61CCB25aFB6): ✅ Whitelisted
+- Base XykCurve (0xd0A2f4ae5E816ec09374c67F6532063B60dE037B): ✅ Whitelisted
+- Base GDACurve (0x4f1627be4C72aEB9565D4c751550C4D262a96B51): ✅ Whitelisted
 

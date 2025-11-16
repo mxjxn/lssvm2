@@ -8,8 +8,8 @@ out/
 **/broadcast/**/31337/
 /broadcast/**/dry-run/
 
-# Docs
-docs/
+# Docs (ignore root level docs, but allow apps/docs)
+/docs/
 
 # Dotenv file
 .env
@@ -37,5 +37,5 @@ dist/
 # Temporary Huff compilation files
 **/__TEMP__*.huff
 
-# Duplicate miniapp directory
-miniapp/
+# Duplicate miniapp directory at root level
+/miniapp/

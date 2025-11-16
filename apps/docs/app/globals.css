@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-gray-50 text-gray-900;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    @apply bg-gray-900 text-gray-100;
+  }
+}
+
+/* Markdown styles */
+.markdown {
+  @apply prose prose-slate dark:prose-invert max-w-none;
+}
+
+.markdown h1 {
+  @apply text-4xl font-bold mb-4 mt-8 first:mt-0;
+}
+
+.markdown h2 {
+  @apply text-3xl font-bold mb-3 mt-6 border-b border-gray-300 dark:border-gray-700 pb-2;
+}
+
+.markdown h3 {
+  @apply text-2xl font-bold mb-2 mt-5;
+}
+
+.markdown h4 {
+  @apply text-xl font-bold mb-2 mt-4;
+}
+
+.markdown p {
+  @apply mb-4;
+}
+
+.markdown ul, .markdown ol {
+  @apply mb-4 ml-6;
+}
+
+.markdown li {
+  @apply mb-2;
+}
+
+.markdown code {
+  @apply bg-gray-200 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm;
+}
+
+.markdown pre {
+  @apply bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto mb-4;
+}
+
+.markdown pre code {
+  @apply bg-transparent px-0 py-0;
+}
+
+.markdown a {
+  @apply text-blue-600 dark:text-blue-400 hover:underline;
+}
+
+.markdown blockquote {
+  @apply border-l-4 border-gray-300 dark:border-gray-700 pl-4 italic my-4;
+}
+
+.markdown table {
+  @apply w-full border-collapse mb-4;
+}
+
+.markdown th, .markdown td {
+  @apply border border-gray-300 dark:border-gray-700 px-4 py-2;
+}
+
+.markdown th {
+  @apply bg-gray-100 dark:bg-gray-800 font-bold;
+}
+
+.markdown img {
+  @apply max-w-full h-auto rounded-lg shadow-md my-4;
+}

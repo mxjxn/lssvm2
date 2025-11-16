@@ -1,6 +1,6 @@
-# sudoAMM v2
+# LSSVM Development Suite
 
-> **Note**: This repository contains the LSSVM (sudoAMM v2) protocol contracts from [sudoswap](https://github.com/sudoswap), reorganized into a Turborepo monorepo structure with additional tooling by [mxjxn](https://github.com/mxjxn).
+> **Note**: This repository is a Turborepo monorepo containing a comprehensive suite of tools and applications built around the LSSVM (Liquidity-Sensitive Single-Variant Market) protocol. It includes the protocol contracts from [sudoswap](https://github.com/sudoswap), reorganized and extended with a Farcaster miniapp, Graph Protocol subgraph, deployment scripts, and developer tooling by [mxjxn](https://github.com/mxjxn).
 
 ## Attribution
 
@@ -11,7 +11,8 @@
 
 ### From mxjxn
 - **`apps/miniapp/`** - Farcaster miniapp for interacting with NFT liquidity pools
-- deployment scripts
+- **`apps/indexer/`** - Graph Protocol subgraph for indexing pool events and swaps
+- Deployment scripts
 - Monorepo structure and Turborepo configuration
 - Integration tooling and developer experience improvements
 
@@ -26,6 +27,7 @@ Read the longform overview [here](https://blog.sudoswap.xyz/introducing-sudoswap
 This repository is organized as a [Turborepo](https://turbo.build/repo) monorepo with the following structure:
 
 - **`apps/miniapp`** - Farcaster miniapp for interacting with NFT liquidity pools (by mxjxn)
+- **`apps/indexer`** - Graph Protocol subgraph for indexing pool creation and swap events (by mxjxn)
 - **`packages/lssvm-contracts`** - Solidity contracts for the LSSVM protocol (from sudoswap)
 
 ### Getting Started
@@ -150,6 +152,62 @@ pnpm dev
 ```
 
 For detailed setup instructions, deployment guide, and architecture information, see the [Miniapp README](./apps/miniapp/README.md).
+
+## Graph Protocol Subgraph (mxjxn)
+
+This repository includes a **Graph Protocol subgraph** (`apps/indexer/`) that indexes all pool creation events, swaps, deposits, and withdrawals on Base Mainnet and Base Sepolia testnet.
+
+### Features
+
+- **Pool Indexing**: Automatically indexes all pools created via the LSSVMPairFactory
+- **Dynamic Data Sources**: Automatically creates data sources for newly created pools
+- **Swap Tracking**: Tracks all NFT buy/sell transactions with pricing and fee information
+- **Deposit/Withdrawal Tracking**: Monitors liquidity changes in pools
+- **State Tracking**: Maintains current balances and spot prices for all pools
+- **ERC721 & ERC1155 Support**: Full support for both NFT standards
+
+### Quick Start
+
+1. Install dependencies (from root):
+```bash
+pnpm install
+```
+
+2. Navigate to the indexer directory:
+```bash
+cd apps/indexer
+```
+
+3. Generate TypeScript types:
+```bash
+npm run codegen
+```
+
+4. Build the subgraph:
+```bash
+npm run build
+```
+
+5. Deploy to The Graph Studio:
+```bash
+npm run deploy
+```
+
+### Subgraph Endpoints
+
+Once deployed, the subgraph provides a GraphQL API endpoint for querying pool data:
+
+- **Base Mainnet**: (Set via environment variable `NEXT_PUBLIC_SUBGRAPH_ENDPOINT_8453`)
+- **Base Sepolia**: (Set via environment variable `NEXT_PUBLIC_SUBGRAPH_ENDPOINT_84532`)
+
+### Usage in Miniapp
+
+The miniapp uses the subgraph for:
+- **Pool Discovery**: Finding all pools for a given NFT contract
+- **Aggregated NFT Views**: Displaying NFTs from all pools, sorted by price
+- **Historical Data**: Querying swap history and pool state changes
+
+For detailed setup instructions, schema documentation, and query examples, see the [Subgraph README](./apps/indexer/README.md).
 
 ## Building/Testing Contracts (sudoswap)
 

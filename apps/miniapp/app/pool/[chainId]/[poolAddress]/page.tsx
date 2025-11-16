@@ -121,11 +121,45 @@ export default function PoolPage() {
   }
 
   if (error || !poolData) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const isInvalidPool = errorMessage.includes('not a valid LSSVM pool') || 
+                         errorMessage.includes('not a contract') ||
+                         errorMessage.includes('returned no data')
+    
     return (
-      <main className="min-h-screen p-4">
+      <main className="min-h-screen p-4 bg-gray-50">
         <div className="max-w-4xl mx-auto">
-          <div className="text-red-600">
-            Error loading pool data: {error instanceof Error ? error.message : 'Unknown error'}
+          <div className="bg-white border border-red-200 rounded-xl p-8 shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h2 className="text-xl font-semibold text-red-900 mb-2">
+                  {isInvalidPool ? 'Invalid Pool Address' : 'Error Loading Pool'}
+                </h2>
+                <p className="text-red-700 mb-4">
+                  {isInvalidPool 
+                    ? `The address "${poolAddress}" is not a valid LSSVM pool contract. It may be from a different factory or not exist on Base Mainnet.`
+                    : errorMessage
+                  }
+                </p>
+                {isInvalidPool && (
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-4">
+                    <p className="text-sm text-gray-600 mb-2">
+                      <strong>Tips:</strong>
+                    </p>
+                    <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
+                      <li>Make sure the pool address is from the correct factory</li>
+                      <li>Verify the pool exists on Base Mainnet (chain ID: 8453)</li>
+                      <li>Check that you're using the correct pool address</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </main>

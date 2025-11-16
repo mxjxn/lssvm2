@@ -1,18 +1,26 @@
 'use client'
 
 import { useParams } from 'next/navigation'
+import { useQuery } from '@tanstack/react-query'
 import { isAddress, Address } from 'viem'
 import { base } from 'viem/chains'
 import Link from 'next/link'
 import { formatPrice } from '@/lib/pool'
 
-// Hardcoded pools for now - in the future, this will be replaced with indexer queries
-// Format: { [contractAddress: string]: Array<{ poolAddress: Address, spotPrice: bigint, poolType: number }> }
-const HARDCODED_POOLS: Record<string, Array<{ poolAddress: Address; spotPrice: bigint; poolType: number }>> = {
-  // Example structure - replace with actual pool data
-  // '0x...': [
-  //   { poolAddress: '0x...' as Address, spotPrice: 1000000000000000000n, poolType: 1 },
-  // ],
+interface PoolInfo {
+  poolAddress: Address
+  spotPrice: bigint
+  poolType: number
+  nftAddress: Address
+}
+
+async function fetchPools(contractAddress: string): Promise<PoolInfo[]> {
+  const response = await fetch(`/api/pools/${contractAddress}`)
+  if (!response.ok) {
+    throw new Error('Failed to fetch pools')
+  }
+  const data = await response.json()
+  return data.pools || []
 }
 
 interface PoolCardProps {
@@ -51,6 +59,13 @@ export default function BrowsePage() {
   const poolContractAddress = params.poolContractAddress as string
   const chainId = base.id // Only Base mainnet for now
 
+  const { data: pools, isLoading, error } = useQuery({
+    queryKey: ['pools', poolContractAddress],
+    queryFn: () => fetchPools(poolContractAddress),
+    enabled: isAddress(poolContractAddress),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  })
+
   if (!isAddress(poolContractAddress)) {
     return (
       <main className="min-h-screen p-4">
@@ -61,8 +76,6 @@ export default function BrowsePage() {
     )
   }
 
-  const pools = HARDCODED_POOLS[poolContractAddress.toLowerCase()] || []
-
   return (
     <main className="min-h-screen p-4 bg-gray-50">
       <div className="max-w-4xl mx-auto">
@@ -71,16 +84,25 @@ export default function BrowsePage() {
           <div className="text-sm text-gray-600 font-mono break-all mb-4">
             {poolContractAddress}
           </div>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800">
-            <strong>Note:</strong> Pool data is currently hardcoded. In the future, this will be replaced with indexer queries. See FUTURE_INDEXING.md for details.
-          </div>
         </div>
 
-        {pools.length === 0 ? (
+        {isLoading ? (
+          <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-500">Loading pools...</p>
+          </div>
+        ) : error ? (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
+            <p className="text-red-600 font-semibold mb-2">Error loading pools</p>
+            <p className="text-sm text-red-500">
+              {error instanceof Error ? error.message : 'Unknown error occurred'}
+            </p>
+          </div>
+        ) : !pools || pools.length === 0 ? (
           <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
             <p className="text-gray-500 mb-2">No pools found for this contract.</p>
             <p className="text-sm text-gray-400">
-              Pools are currently hardcoded. Add pools to HARDCODED_POOLS in browse/[poolContractAddress]/page.tsx
+              Pools are discovered by querying factory events. If you just created a pool, it may take a moment to appear.
             </p>
           </div>
         ) : (

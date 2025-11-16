@@ -1155,22 +1155,44 @@ export default function BuyPage() {
   }
 
   if (poolError) {
+    const errorMessage = poolError instanceof Error ? poolError.message : 'Failed to load pool data. Please check the pool address and try again.'
+    const isInvalidPool = errorMessage.includes('not a valid LSSVM pool') || 
+                         errorMessage.includes('not a contract') ||
+                         errorMessage.includes('returned no data')
+    
     return (
       <main className="min-h-screen bg-gray-50 py-6 px-4">
         <div className="max-w-2xl mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-xl p-5 shadow-sm">
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-5 h-5 rounded-full bg-red-500 flex items-center justify-center mt-0.5">
-                <svg className="w-3 h-3 text-white flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <div className="bg-white border border-red-200 rounded-xl p-8 shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div className="flex-1">
-                <div className="text-red-800 font-semibold mb-2">Error Loading Pool</div>
-                <div className="text-sm text-red-700 mb-3">
-                  {poolError instanceof Error ? poolError.message : 'Failed to load pool data. Please check the pool address and try again.'}
-                </div>
-                <div className="text-xs text-red-600 space-y-1">
+                <h2 className="text-xl font-semibold text-red-900 mb-2">
+                  {isInvalidPool ? 'Invalid Pool Address' : 'Error Loading Pool'}
+                </h2>
+                <p className="text-red-700 mb-4">
+                  {isInvalidPool 
+                    ? `The address "${poolAddressRaw}" is not a valid LSSVM pool contract. It may be from a different factory or not exist on Base Mainnet.`
+                    : errorMessage
+                  }
+                </p>
+                {isInvalidPool && (
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mt-4">
+                    <p className="text-sm text-gray-600 mb-2">
+                      <strong>Tips:</strong>
+                    </p>
+                    <ul className="text-sm text-gray-600 list-disc list-inside space-y-1">
+                      <li>Make sure the pool address is from the correct factory</li>
+                      <li>Verify the pool exists on Base Mainnet (chain ID: 8453)</li>
+                      <li>Check that you're using the correct pool address</li>
+                    </ul>
+                  </div>
+                )}
+                <div className="text-xs text-gray-500 mt-4 space-y-1">
                   <div>Pool Address: {poolAddressRaw}</div>
                   <div>Chain: {chain.name} ({chain.id})</div>
                 </div>

@@ -11,37 +11,80 @@ export async function fetchPoolData(pairAddress: Address, chainId: number): Prom
   try {
     const client = getPublicClient(chainId)
     
-    // Fetch basic pool info first
-    const [poolType, spotPrice, delta, fee, nft, bondingCurve] = await Promise.all([
-      client.readContract({
+    // First, check if the address is actually a contract
+    const code = await client.getBytecode({ address: pairAddress })
+    if (!code || code === '0x') {
+      throw new Error(`Address ${pairAddress} is not a contract`)
+    }
+
+    // Try to read a simple function first to verify it's a pool contract
+    // Use poolType as a validation check - if this fails, it's not a valid pool
+    let poolType: number
+    try {
+      poolType = await client.readContract({
         address: pairAddress,
         abi: LSSVM_PAIR_ABI,
         functionName: 'poolType',
-      }),
+      }) as number
+    } catch (error: any) {
+      // Check if it's a "no data" error
+      if (error?.message?.includes('returned no data') || error?.message?.includes('0x')) {
+        throw new Error(`Address ${pairAddress} is not a valid LSSVM pool contract`)
+      }
+      throw error
+    }
+    
+    // Fetch remaining pool info
+    const [spotPrice, delta, fee, nft, bondingCurve] = await Promise.all([
       client.readContract({
         address: pairAddress,
         abi: LSSVM_PAIR_ABI,
         functionName: 'spotPrice',
+      }).catch((err) => {
+        if (err?.message?.includes('returned no data')) {
+          throw new Error(`Address ${pairAddress} is not a valid LSSVM pool contract`)
+        }
+        throw err
       }),
       client.readContract({
         address: pairAddress,
         abi: LSSVM_PAIR_ABI,
         functionName: 'delta',
+      }).catch((err) => {
+        if (err?.message?.includes('returned no data')) {
+          throw new Error(`Address ${pairAddress} is not a valid LSSVM pool contract`)
+        }
+        throw err
       }),
       client.readContract({
         address: pairAddress,
         abi: LSSVM_PAIR_ABI,
         functionName: 'fee',
+      }).catch((err) => {
+        if (err?.message?.includes('returned no data')) {
+          throw new Error(`Address ${pairAddress} is not a valid LSSVM pool contract`)
+        }
+        throw err
       }),
       client.readContract({
         address: pairAddress,
         abi: LSSVM_PAIR_ABI,
         functionName: 'nft',
+      }).catch((err) => {
+        if (err?.message?.includes('returned no data')) {
+          throw new Error(`Address ${pairAddress} is not a valid LSSVM pool contract`)
+        }
+        throw err
       }),
       client.readContract({
         address: pairAddress,
         abi: LSSVM_PAIR_ABI,
         functionName: 'bondingCurve',
+      }).catch((err) => {
+        if (err?.message?.includes('returned no data')) {
+          throw new Error(`Address ${pairAddress} is not a valid LSSVM pool contract`)
+        }
+        throw err
       }),
     ])
 

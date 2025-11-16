@@ -33,6 +33,7 @@ export function resolveIPFSUrl(uri: string): string {
     const ipfsHash = uri.split('/ipfs/')[1]?.split('/')[0]
     if (ipfsHash) {
       const ipfsGateway = CONFIG.IPFS_URL || 'https://ipfs.io'
+      // Remove trailing slash if present
       const gateway = ipfsGateway.replace(/\/$/, '')
       return `${gateway}/ipfs/${ipfsHash}`
     }

@@ -501,6 +501,25 @@ export const LSSVM_FACTORY_ABI = [
     stateMutability: 'pure',
     type: 'function',
   },
+  // Events for pool discovery
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'address', name: 'poolAddress', type: 'address' },
+      { indexed: false, internalType: 'uint256[]', name: 'initialIds', type: 'uint256[]' },
+    ],
+    name: 'NewERC721Pair',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'address', name: 'poolAddress', type: 'address' },
+      { indexed: false, internalType: 'uint256', name: 'initialBalance', type: 'uint256' },
+    ],
+    name: 'NewERC1155Pair',
+    type: 'event',
+  },
 ] as const
 
 // Types

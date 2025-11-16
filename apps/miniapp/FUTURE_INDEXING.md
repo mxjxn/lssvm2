@@ -18,34 +18,40 @@ Currently, pool data is hardcoded in the browse page (`app/browse/[poolContractA
 ### Option 1: The Graph Subgraph
 
 Create a subgraph that indexes:
+
 - `NewERC721Pair` events from the factory
 - `NewERC1155Pair` events from the factory
 - Pool state changes (spot price, delta, etc.)
 - NFT balances in pools
 
 **Pros:**
+
 - Decentralized indexing
 - GraphQL API for easy querying
 - Automatic indexing of new events
 - Good performance
 
 **Cons:**
+
 - Requires subgraph deployment and maintenance
 - May have indexing delays
 
 ### Option 2: Custom Indexer Service
 
 Build a custom indexing service that:
+
 - Listens to factory events via RPC
 - Stores pool data in a database
 - Provides REST/GraphQL API for queries
 
 **Pros:**
+
 - Full control over indexing logic
 - Can customize data structure
 - No dependency on external services
 
 **Cons:**
+
 - Requires infrastructure setup
 - More maintenance overhead
 - Need to handle reorgs and missed events
@@ -53,16 +59,19 @@ Build a custom indexing service that:
 ### Option 3: Event Log Queries
 
 Query factory events directly via RPC:
+
 - Use `getLogs` to fetch historical events
 - Cache results client-side or server-side
 - Poll for new events periodically
 
 **Pros:**
+
 - No additional infrastructure
 - Simple to implement
 - Works with any RPC provider
 
 **Cons:**
+
 - Slower than indexed solutions
 - May hit RPC rate limits
 - Requires handling pagination
@@ -74,6 +83,7 @@ Start with **Option 3** (Event Log Queries) for MVP, then migrate to **Option 1*
 ### Phase 1: Event Log Queries (MVP)
 
 1. Create API route `/api/pools/[contractAddress]` that:
+
    - Queries factory contract for `NewERC721Pair` and `NewERC1155Pair` events
    - Filters by NFT contract address
    - Returns pool addresses and basic info
@@ -86,19 +96,20 @@ Start with **Option 3** (Event Log Queries) for MVP, then migrate to **Option 1*
 ### Phase 2: The Graph Subgraph (Production)
 
 1. Create subgraph schema:
-   ```graphql
-   type Pool @entity {
-     id: ID!
-     address: Bytes!
-     nftContract: Bytes!
-     tokenContract: Bytes!
-     poolType: Int!
-     spotPrice: BigInt!
-     delta: BigInt!
-     fee: BigInt!
-     createdAt: BigInt!
-   }
-   ```
+
+```graphql
+type Pool @entity {
+  id: ID!
+  address: Bytes!
+  nftContract: Bytes!
+  tokenContract: Bytes!
+  poolType: Int!
+  spotPrice: BigInt!
+  delta: BigInt!
+  fee: BigInt!
+  createdAt: BigInt!
+}
+```
 
 2. Deploy subgraph to The Graph Network or hosted service
 
@@ -127,6 +138,7 @@ event NewERC1155Pair(address indexed pair, uint256 initialNFTBalance);
 ## Query Examples
 
 ### The Graph Query
+
 ```graphql
 {
   pools(where: { nftContract: "0x..." }) {
@@ -139,6 +151,7 @@ event NewERC1155Pair(address indexed pair, uint256 initialNFTBalance);
 ```
 
 ### Direct RPC Query
+
 ```typescript
 const filter = {
   address: factoryAddress,
@@ -155,8 +168,8 @@ const logs = await provider.getLogs(filter)
 ## Next Steps
 
 1. ✅ Document indexing approach (this file)
-2. ⏳ Implement event log query API route
-3. ⏳ Update browse page to use API
+2. ✅ Implement event log query API route (`/api/pools/[contractAddress]`)
+3. ✅ Update browse page to use API
 4. ⏳ Deploy contracts (if needed)
 5. ⏳ Create and deploy subgraph
 6. ⏳ Migrate to subgraph queries

@@ -35,4 +35,4 @@ dist/
 *.log
 
 # Temporary Huff compilation files
-**/__TEMP__*.huff
+**/__TEMP__*.huffminiapp/

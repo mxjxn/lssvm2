@@ -126,8 +126,16 @@ pnpm install
 2. Configure environment variables (see `apps/miniapp/ENV_VARS.md` for details):
 ```bash
 # Create apps/miniapp/.env.local with your contract addresses
-NEXT_PUBLIC_ROUTER_ADDRESS_8453=0x...
-NEXT_PUBLIC_FACTORY_ADDRESS_8453=0x...
+
+# Base Mainnet (chain ID 8453)
+NEXT_PUBLIC_ROUTER_ADDRESS_8453=0x4352c72114C4b9c4e1F8C96347F2165EECaDeb5C
+NEXT_PUBLIC_FACTORY_ADDRESS_8453=0xF6B4bDF778db19DD5928248DE4C18Ce22E8a5f5e
+
+# Base Sepolia Testnet (chain ID 84532) - Optional
+NEXT_PUBLIC_ROUTER_ADDRESS_84532=0x6C9e6BAc4255901EaD3447C07917967E9dBc32d3
+NEXT_PUBLIC_FACTORY_ADDRESS_84532=0x372990Fd91CF61967325dD5270f50c4192bfb892
+
+# RPC Configuration
 NEXT_PUBLIC_BASE_RPC_URL=https://base-mainnet.g.alchemy.com/v2/YOUR_API_KEY
 ```
 
@@ -161,22 +169,53 @@ open report/index.html
 ```
 
 ## Documentation
-General documentation available [here](https://docs.sudoswap.xyz/).
 
-To pull quote information, check out the sudo-defined-quoter package [here](https://github.com/sudoswap/sudo-defined-quoter).
+### Protocol Documentation
+- General documentation: [docs.sudoswap.xyz](https://docs.sudoswap.xyz/)
+- Quote information: [sudo-defined-quoter](https://github.com/sudoswap/sudo-defined-quoter)
+- Security audits: [v2-audits](https://github.com/sudoswap/v2-audits) (Narya, Spearbit, Cyfrin)
 
-To view audits for sudoAMM v2 by Narya, Spearbit, and Cyfrin check out [here](https://github.com/sudoswap/v2-audits)
+### Deployment Documentation
+- [Base Mainnet Deployment Summary](./packages/lssvm-contracts/BASE_DEPLOYMENT_SUMMARY.md)
+- [Base Testnet Deployment Summary](./packages/lssvm-contracts/BASE_TESTNET_DEPLOYMENT_SUMMARY.md)
+- [Test NFT Contracts](./packages/lssvm-contracts/TEST_NFTS.md)
+- [Deployment Guide](./packages/lssvm-contracts/script/README.md)
+- [Local Testing Guide](./packages/lssvm-contracts/LOCAL_TESTING.md)
 
 ## Deployment Scripts (mxjxn)
 
-> **⚠️ Warning**: These deployment scripts are untested and provided as-is. Use at your own risk. Always test deployments on a testnet before deploying to mainnet. Verify all contract addresses and parameters before broadcasting transactions.
+> **⚠️ Warning**: Always test deployments on a testnet before deploying to mainnet. Verify all contract addresses and parameters before broadcasting transactions.
 
 This repository includes comprehensive deployment scripts for deploying the entire sudoAMM v2 protocol. The scripts are located in `packages/lssvm-contracts/script/` and include:
 
 - **Individual deployment scripts** for each component (Core, Bonding Curves, Router, Property Checkers, Settings)
+- **Network-specific scripts** for Base Mainnet and Base Sepolia testnet
 - **Master deployment script** (`DeployAll.s.sol`) for deploying everything at once
+- **Test NFT deployment** scripts for testing pools
 - **Comprehensive documentation** including README, deployment checklist, and order reference
 - **Local testing support** with Anvil integration and helper scripts
+
+### Quick Reference
+
+**Local Development:**
+```bash
+cd packages/lssvm-contracts
+anvil  # In one terminal
+./deploy-local.sh  # In another terminal
+```
+
+**Base Sepolia Testnet:**
+```bash
+cd packages/lssvm-contracts
+./deploy-base-testnet.sh
+./deploy-test-nfts.sh  # Deploy test NFTs for testing
+```
+
+**Base Mainnet:**
+```bash
+cd packages/lssvm-contracts
+./deploy-base.sh
+```
 
 ### Local Testing
 
@@ -195,7 +234,12 @@ Before deploying to testnet or mainnet, it's highly recommended to test deployme
    ./deploy-local.sh
    ```
 
-3. Follow the [Local Testing Guide](./packages/lssvm-contracts/LOCAL_TESTING.md) for:
+3. Deploy test NFTs (optional):
+   ```bash
+   ./deploy-test-nfts.sh
+   ```
+
+4. Follow the [Local Testing Guide](./packages/lssvm-contracts/LOCAL_TESTING.md) for:
    - Factory configuration (automatic and manual)
    - Creating and testing ERC721 pools
    - Creating and testing ERC1155 pools
@@ -206,15 +250,34 @@ The deployment script automatically configures the factory (whitelists bonding c
 
 ### Deployment to Testnet/Mainnet
 
-For detailed instructions, see the [Deployment Guide](./packages/lssvm-contracts/script/README.md).
+**Base Sepolia Testnet:**
 
-Quick start:
+See [DEPLOY_BASE_TESTNET.md](./packages/lssvm-contracts/DEPLOY_BASE_TESTNET.md) for detailed instructions.
+
+```bash
+cd packages/lssvm-contracts
+./deploy-base-testnet.sh
+```
+
+**Base Mainnet:**
+
+See [DEPLOY_BASE.md](./packages/lssvm-contracts/DEPLOY_BASE.md) for detailed instructions.
+
+```bash
+cd packages/lssvm-contracts
+./deploy-base.sh
+```
+
+**Generic Deployment:**
+
+For deploying to other networks, see the [Deployment Guide](./packages/lssvm-contracts/script/README.md).
+
 ```bash
 cd packages/lssvm-contracts
 
 # Configure your environment
-cp script/.env.example .env
-# Edit .env with your values
+cp script/.env.example .env.local
+# Edit .env.local with your values
 
 # Deploy all contracts
 forge script script/DeployAll.s.sol:DeployAll --rpc-url $RPC_URL --broadcast --verify
@@ -223,9 +286,11 @@ forge script script/DeployAll.s.sol:DeployAll --rpc-url $RPC_URL --broadcast --v
 ### Deployment Features
 
 - **Automatic factory configuration**: Scripts automatically whitelist bonding curves and router when deployer is factory owner
-- **OpenZeppelin v5 compatibility**: Updated to work with latest OpenZeppelin contracts
+- **Mnemonic support**: Derive private keys from mnemonics for easier key management
+- **Chain ID validation**: Scripts verify you're deploying to the correct network
 - **Comprehensive error handling**: Detailed logging and fallback checks
-- **Helper scripts**: `deploy-local.sh` for easy local deployment
+- **Helper scripts**: Convenient bash scripts for common deployment scenarios
+- **Test NFT contracts**: Pre-configured test NFTs for testing pools
 
 For more details on deployment improvements and best practices, see [DEPLOYMENT_IMPROVEMENTS.md](./packages/lssvm-contracts/DEPLOYMENT_IMPROVEMENTS.md).
 

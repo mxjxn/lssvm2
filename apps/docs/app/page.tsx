@@ -87,8 +87,7 @@ export default function Home() {
             Protocol Overview
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Learn about the LSSVM protocol architecture, features, 
-            and how it extends sudoAMM v2.
+            LSSVM is built directly on top of the original sudoswap sudoAMM v2 protocol, developed entirely by the sudoswap team. This project does not modify or change the underlying protocol in any way—full credit goes to sudoswap and their authors for creating sudoAMM v2 (licensed under AGPL-3.0).
           </p>
           <Link href="/protocol" className="text-blue-600 dark:text-blue-400 hover:underline">
             Learn more →

@@ -25,11 +25,16 @@ export default function Contracts() {
       <h1 className="text-4xl font-bold mb-8">Smart Contracts</h1>
       
       <div className="mb-8 p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
-        <p className="text-gray-700 dark:text-gray-300">
+        <p className="text-gray-700 dark:text-gray-300 mb-4">
           The LSSVM protocol smart contracts implement sudoAMM v2 with support for ERC721 
           and ERC1155 NFTs, multiple bonding curves, on-chain royalties, and advanced 
           trading features.
         </p>
+        <div className="mt-4 pt-4 border-t border-indigo-200 dark:border-indigo-700">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            <strong>Attribution:</strong> The protocol contracts are built directly on top of the original sudoswap sudoAMM v2 protocol, developed entirely by the sudoswap team. This project does not modify or change the underlying protocol in any way—full credit goes to sudoswap and their authors for creating sudoAMM v2 (licensed under AGPL-3.0).
+          </p>
+        </div>
       </div>
 
       {mainDoc && <MarkdownRenderer content={mainDoc.content} />}

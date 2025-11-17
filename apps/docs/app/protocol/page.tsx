@@ -17,11 +17,16 @@ export default function Protocol() {
       
       <div className="mb-8 p-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
         <h2 className="text-xl font-bold mb-2">About LSSVM (sudoAMM v2)</h2>
-        <p className="text-gray-700 dark:text-gray-300">
+        <p className="text-gray-700 dark:text-gray-300 mb-4">
           The LSSVM protocol is an advanced NFT automated market maker that provides liquidity 
           for NFT trading. Built on sudoAMM v2, it introduces features like on-chain royalty 
           support, property checking, and revenue sharing settings.
         </p>
+        <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-700">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            <strong>Attribution:</strong> LSSVM is built directly on top of the original sudoswap sudoAMM v2 protocol, developed entirely by the sudoswap team. This project does not modify or change the underlying protocol in any way—full credit goes to sudoswap and their authors for creating sudoAMM v2 (licensed under AGPL-3.0).
+          </p>
+        </div>
       </div>
 
       {mainDoc && (

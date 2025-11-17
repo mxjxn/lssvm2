@@ -39,3 +39,7 @@ dist/
 
 # Duplicate miniapp directory at root level
 /miniapp/
+
+# Editor/IDE cache directories
+.clj-kondo/
+.lsp/

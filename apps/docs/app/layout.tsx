@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { ColorSchemeProvider } from '../contexts/ColorSchemeContext'
 import { HueSlider } from '../components/HueSlider'
 import { TerminalLink } from '../components/TerminalLink'
+import { ThemeToggle } from '../components/ThemeToggle'
 
 export const metadata: Metadata = {
   title: 'LSSVM Development Suite Documentation',
@@ -62,8 +63,9 @@ export default function RootLayout({
                   </nav>
 
                   <div className="flex items-center gap-4">
-                    <div className="hidden sm:block">
+                    <div className="hidden sm:flex items-center gap-3">
                       <HueSlider />
+                      <ThemeToggle />
                     </div>
                     <a
                       href="https://github.com/mxjxn/such-lssvm"
@@ -95,8 +97,9 @@ export default function RootLayout({
                         ))}
                       </div>
                     </div>
-                    <div className="flex items-center justify-end">
+                    <div className="flex items-center justify-end gap-3">
                       <HueSlider />
+                      <ThemeToggle />
                     </div>
                   </div>
                 </nav>

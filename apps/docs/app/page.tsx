@@ -141,6 +141,61 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Related Projects */}
+      <div className="mt-16">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-4xl mx-auto shadow-md">
+          <h2 className="text-2xl font-bold mb-6 text-center">Related Projects</h2>
+          <div className="space-y-6">
+            <div className="border-l-4 border-purple-600 dark:border-purple-400 pl-6">
+              <h3 className="text-xl font-bold mb-2 text-purple-600 dark:text-purple-400">
+                Cryptoart Monorepo
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                A comprehensive monorepo containing all projects related to the Cryptoart channel on Farcaster, 
+                including creator tools, auctionhouse functionality, and NFT curation.
+              </p>
+              <div className="space-y-2 mb-4">
+                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Key Projects:</p>
+                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 ml-4">
+                  <li>• <strong>Cryptoart Studio App</strong> - Creator tools and subscription management</li>
+                  <li>• <strong>Auctionhouse App</strong> - Auction functionality for NFTs</li>
+                  <li>• <strong>Such Gallery</strong> - NFT curation and gallery with referral system</li>
+                  <li>• <strong>Creator Core Contracts</strong> - ERC721/ERC1155 NFT framework</li>
+                  <li>• <strong>Auctionhouse Contracts</strong> - Marketplace smart contracts</li>
+                  <li>• <strong>Unified Indexer</strong> - Bridges LSSVM pools and Auctionhouse listings</li>
+                </ul>
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Integration:</p>
+                <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1 ml-4">
+                  <li>• Uses <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">@lssvm/abis</code> package for LSSVM contract interactions</li>
+                  <li>• Unified indexer provides single interface for querying pools and auctions</li>
+                  <li>• LSSVM pool creation integrated into collection deployment flow</li>
+                </ul>
+              </div>
+              <div className="mt-4 flex gap-4">
+                <a
+                  href="https://github.com/mxjxn/cryptoart-studio"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-purple-600 dark:text-purple-400 hover:underline font-semibold"
+                >
+                  View Repository →
+                </a>
+                <a
+                  href="https://github.com/mxjxn/cryptoart-studio/blob/main/LSSVM_INTEGRATION.md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-purple-600 dark:text-purple-400 hover:underline font-semibold"
+                >
+                  Integration Guide →
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Attribution */}
       <div className="mt-16 text-center">
         <div className="bg-white dark:bg-gray-800 rounded-lg p-8 max-w-4xl mx-auto shadow-md">
